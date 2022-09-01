@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PromocodeFactoryProject</name>
+    </assembly>
+    <members>
+        <member name="M:PromocodeFactoryProject.Controllers.CustomersController.GetCustomersAsync">
+            <summary>
+             Get all customers
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.CustomersController.GetCustomerAsync(System.Guid)">
+            <summary>
+             Get a customer with the specified Id
+            </summary>
+            <example>
+            {
+            "id": "151533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.CustomersController.CreateCustomerAsync(PromocodeFactoryProject.Model.CreateOrEditCustomerRequest)">
+            <summary>
+            Create a customer
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.CustomersController.EditCustomersAsync(System.Guid,PromocodeFactoryProject.Model.CreateOrEditCustomerRequest)">
+            <summary>
+             Edit customer with the specified Id
+            </summary>
+            <example>
+            {
+            "id": "151533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.CustomersController.DeleteCustomer(System.Guid)">
+            <summary>
+             Delete the customer with the specified Id
+            </summary>
+            <example>
+            {
+            "id": "151533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.EmployeesController.GetEmployeesAsync">
+            <summary>
+             Get all employees
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.EmployeesController.GetEmployeeByIdAsync(System.Guid)">
+            <summary>
+             Get an employee by Id
+            </summary>
+            <example>
+            {
+            "id": "451533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.EmployeesController.CreateEmployeeAsync(PromocodeFactoryProject.Model.CreateOrEditEmployeeRequest)">
+            <summary>
+             create an employee
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.EmployeesController.UpdateEmployee(System.Guid,PromocodeFactoryProject.Model.CreateOrEditEmployeeRequest)">
+            <summary>
+             edit an employees by Id
+            </summary>
+            <example>
+            {
+            "id": "451533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.EmployeesController.DeleteEmployee(System.Guid)">
+            <summary>
+             Delete the employee with the specified Id
+            </summary>
+            <example>
+            {
+            "id": "451533d5-d8d5-4a11-9c7b-eb9f14e1a32f"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PartnersController.GetPartnersAsync">
+            <summary>
+             Get all partners
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PartnersController.GetPartnerLimitAsync(System.Guid,System.Guid)">
+            <summary>
+             get a promocode limit for the specified partner
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PartnersController.SetPartnerPromoCodeLimitAsync(System.Guid,PromocodeFactoryProject.Controllers.PartnerPromoCodeLimitRequest)">
+            <summary>
+             set a promocode limit for the specified partner
+            </summary>
+            <example>
+            {
+            "id": "0da65561-cf56-4942-bff2-22f50cf70d43"
+            }
+            </example>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PartnersController.CancelPartnerPromoCodeLimitAsync(System.Guid)">
+            <summary>
+             Reset the promocode limit for the specified partner
+            </summary>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PreferenceController.GetPreferencesAsync">
+            <summary>
+            get preferences
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PromocodesController.GetPromocodesAsync">
+            <summary>
+            Get all promocodes
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.PromocodesController.GivePromoCodesToCustomersWithPreferenceAsync(PromocodeFactoryProject.Model.PromoCodeRequest)">
+            <summary>
+            Create a promocode and send it to customers with the specified preference
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:PromocodeFactoryProject.Controllers.RolesController.GetRolesAsync">
+            <summary>
+             Get all roles
+            </summary>
+        </member>
+    </members>
+</doc>
