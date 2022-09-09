@@ -10,6 +10,7 @@ using PromocodeFactoryProject.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace PromocodeFactoryProject.Controllers
@@ -91,12 +92,21 @@ namespace PromocodeFactoryProject.Controllers
         ///<summary>
         ///Create a customer
         ///</summary>
+        ///<example>
+        ///{
+        ///"FirstName":"New",
+        ///"LastName":"New",
+        ///"Email":"some@mail.ru"
+        ///"Preferences": ["ef7f299f-92d7-459f-896e-eb9f14e1a32f"]
+        ///}
+        ///</example>
         [HttpPost]
         public async Task<IActionResult> CreateCustomerAsync(CreateOrEditCustomerRequest request)
         {
             var preferences = await GetPreferencesAsync(request.PreferenceIds);
             var customer = _customerMapper.MapFromModel(request, preferences);
             await _eFRepository.AddAsync(customer);
+
             return CreatedAtAction(
               nameof(GetCustomerAsync),
               new { id = customer.Id },
@@ -107,7 +117,8 @@ namespace PromocodeFactoryProject.Controllers
             IEnumerable<Preference> preferences = new List<Preference>();
             if (ids != null && ids.Count> 0)
             {
-                return _preferenceRepository.GetByCondition(x => ids.Any(item => item == x.Id));
+                Expression < Func<Preference, bool> > expression = x => ids.Any(item => item == x.Id);
+                return  _preferenceRepository.GetByConditionAsync(expression);
             }
 
             return Task.FromResult(preferences);

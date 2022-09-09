@@ -62,23 +62,47 @@ namespace DataAccess
             }
         };
 
-        public static IEnumerable<Customer> Customers => new List<Customer>()
+        public static IEnumerable<Customer> Customers
         {
-            new Customer()
+            get
             {
-                Id = Guid.Parse("151533d5-d8d5-4a11-9c7b-eb9f14e1a32f"),
-                FirstName = "Alex",
-                LastName = "Green",
-                Email = "ag@somemail.com"
-            },
-             new Customer()
-            {
-                Id = Guid.Parse("251533d5-d8d5-4a11-9c7b-eb9f14e1a32f"),
-                FirstName = "John",
-                LastName = "Smith",
-                Email = "js@somemail.com"
-            },
-        };
+                var customerId = Guid.Parse("151533d5-d8d5-4a11-9c7b-eb9f14e1a32f");
+                List <Customer> customers = new List<Customer>()
+                {
+                    new Customer()
+                    {
+                        Id = customerId,
+                        FirstName = "Alex",
+                        LastName = "Green",
+                        Email = "ag@somemail.com",
+                        Preferences = new List<CustomerPreference>()
+                        {
+                            new CustomerPreference()
+                            {
+                                CustomerId = customerId,
+                                PreferenceId = Guid.Parse("ef7f299f-92d7-459f-896e-eb9f14e1a32f")
+                            },
+                            new CustomerPreference()
+                            {
+                                CustomerId = customerId,
+                                PreferenceId = Guid.Parse("ef7f299f-92d7-459f-896e-078ed53ef99c")
+                            },
+                        }
+
+                    },
+                     new Customer()
+                    {
+                        Id = Guid.Parse("251533d5-d8d5-4a11-9c7b-eb9f14e1a32f"),
+                        FirstName = "John",
+                        LastName = "Smith",
+                        Email = "js@somemail.com",
+                        Preferences = new List<CustomerPreference>()
+                    },
+                };
+                return customers;
+            }
+        }
+
         public static IEnumerable<Employee> Employees => new List<Employee>()
         {
             new Employee()
@@ -87,10 +111,7 @@ namespace DataAccess
                 Email = "owner@somemail.com",
                 FirstName = "Иван",
                 LastName = "Сергеев",
-                Roles = new List<Role>()
-                {
-                    Roles.FirstOrDefault(x => x.Name == "Admin")
-                },
+                Role = EmployeeRoles.FirstOrDefault(x => x.Name == "Admin"),
                 AppliedPromocodesCount = 5
             },
             new Employee()
@@ -99,29 +120,37 @@ namespace DataAccess
                 Email = "andreev@somemail.com",
                 FirstName = "Петр",
                 LastName = "Андреев",
-                Roles = new List<Role>()
-                {
-                    Roles.FirstOrDefault(x => x.Name == "PartnerManager")
-                },
+                Role = EmployeeRoles.FirstOrDefault(x => x.Name == "PartnerManager"),
                 AppliedPromocodesCount = 10
             },
         };
 
-        public static IEnumerable<Role> Roles => new List<Role>()
-        {
-            new Role()
-            {
-                Id = Guid.Parse("53729686-a368-4eeb-8bfa-cc69b6050d02"),
-                Name = "Admin",
-                Description = "Администратор",
-            },
-            new Role()
-            {
-                Id = Guid.Parse("b0ae7aac-5493-45cd-ad16-87426a5e7665"),
-                Name = "PartnerManager",
-                Description = "Партнерский менеджер"
-            }
-        };
+        static List<Role> roles = null;
 
+        public static IEnumerable<Role> EmployeeRoles
+        {
+            get
+            {
+                if (roles == null)
+                {
+                    roles = new List<Role>()
+                    {
+                        new Role()
+                        {
+                            Id = Guid.Parse("53729686-a368-4eeb-8bfa-cc69b6050d02"),
+                            Name = "Admin",
+                            Description = "Администратор",
+                        },
+                        new Role()
+                        {
+                            Id = Guid.Parse("b0ae7aac-5493-45cd-ad16-87426a5e7665"),
+                            Name = "PartnerManager",
+                            Description = "Партнерский менеджер"
+                        }
+                    };
+                }
+                return roles;
+            }
+        }
     }
 }

@@ -15,6 +15,10 @@ namespace DataAccess
         {
             _dataContext.Database.EnsureDeleted();
             _dataContext.Database.EnsureCreated();
+
+            _dataContext.AddRange(DataFactory.EmployeeRoles);
+            _dataContext.SaveChanges();
+
             _dataContext.AddRange(DataFactory.Employees);
             _dataContext.SaveChanges();
 

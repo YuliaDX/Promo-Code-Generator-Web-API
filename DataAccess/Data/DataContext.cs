@@ -31,7 +31,14 @@ namespace DataAccess
             {
                 entity.HasKey(e => e.Id);
             });
-
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+            modelBuilder.Entity<PromoCode>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
             modelBuilder.Entity<CustomerPreference>(entity =>
             {
                 entity.HasKey(e => new {e.CustomerId, e.PreferenceId });

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace PromocodeFactoryProject.Mappers
@@ -29,7 +30,10 @@ namespace PromocodeFactoryProject.Mappers
             employee.AppliedPromocodesCount = model.AppliedPromocodesCount;
             employee.Email = model.Email;
 
-            employee.Roles = await _rolesRepository.GetByCondition(x=> model.Roles.Any(item => item.Name == x.Name)) as List<Role>;
+            Expression<Func<Role, bool>> expression = item => item.Name == model.Role.Name;
+
+            var roleCollection = await _rolesRepository.GetByConditionAsync(expression);
+            employee.Role = ((List<Role>)roleCollection)[0];
             return employee;
             
         }

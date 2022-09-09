@@ -21,13 +21,12 @@ namespace PromocodeFactoryProject.Controllers
        : ControllerBase
     {
         private readonly IRepository<Employee> _employeeRepository;
-        private readonly IRepository<Role> _rolesRepository;
+        
         private readonly IEmployeeMapper _employeeMapper;
-        public EmployeesController(IRepository<Employee> employeeRepository, IRepository<Role> rolesRepository,
+        public EmployeesController(IRepository<Employee> employeeRepository, 
              IEmployeeMapper employeeMapper)
         {
             _employeeRepository = employeeRepository;
-            _rolesRepository = rolesRepository;
             _employeeMapper = employeeMapper;
         }
 
@@ -49,11 +48,11 @@ namespace PromocodeFactoryProject.Controllers
              {
                  Id = employee.Id,
                  Email = employee.Email,
-                 Roles = employee.Roles.Select(x => new RoleItemResponse()
+                 Role = new RoleItemResponse()
                  {
-                     Name = x.Name,
-                     Description = x.Description
-                 }).ToList(),
+                     Name = employee.Role.Name,
+                     Description = employee.Role.Description
+                 },
                  FullName = employee.FullName,
                  AppliedPromocodesCount = employee.AppliedPromocodesCount
              };
@@ -123,7 +122,7 @@ namespace PromocodeFactoryProject.Controllers
                 throw error;
             }
 
-            if (id != model.Id)
+            if (id != employee.Id)
             {
                 return BadRequest("This employee cannot be modified");
             }

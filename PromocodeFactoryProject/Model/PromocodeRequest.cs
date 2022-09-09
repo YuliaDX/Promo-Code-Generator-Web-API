@@ -14,6 +14,9 @@ namespace PromocodeFactoryProject.Model
         public string PromoCode { get; set; }
 
         public string Preference { get; set; }
+
+        //id of admin or partner manager
+        public Guid PartnerManagerId { get; set; }
     }
 
 }

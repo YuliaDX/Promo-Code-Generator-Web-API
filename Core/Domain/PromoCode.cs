@@ -19,9 +19,9 @@ namespace Core.Domain
         [MaxLength(50)]
         public string PartnerName { get; set; }
 
+        //admin or partner manager
         public virtual Employee PartnerManager { get; set; }
 
         public virtual Preference Preference { get; set; }
-        public Guid CustomerId { get; set; }
     }
 }

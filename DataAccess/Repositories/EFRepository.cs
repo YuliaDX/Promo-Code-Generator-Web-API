@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DataAccess.Repositories
 {
@@ -29,9 +30,11 @@ namespace DataAccess.Repositories
            return entities;
         }
 
-        public Task<IEnumerable<T>> GetByCondition(Func<T, bool> predicate)
+        public async Task<IEnumerable<T>> GetByConditionAsync(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var entities = await _dataContext.Set<T>().Where(predicate).ToListAsync();
+            return entities;
+
         }
 
         public async Task<T> GetByIdAsync(Guid id)
