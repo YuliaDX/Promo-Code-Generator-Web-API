@@ -80,7 +80,7 @@ namespace PromocodeFactoryProject
             app.UseReDoc();
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseMiddleware<ApplicationVersionMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
