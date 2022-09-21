@@ -1,4 +1,5 @@
-﻿using Core.Domain;
+﻿using BusinessLogic;
+using Core.Domain;
 using Core.Repositories;
 using DataAccess;
 using DataAccess.Repositories;
@@ -20,15 +21,14 @@ namespace PromocodeFactoryProject.Controllers
     public class CustomersController
       : ControllerBase
     {
-        readonly IRepository<Customer> _eFRepository;
-        readonly IRepository<Preference> _preferenceRepository;
         readonly ICustomerMapper _customerMapper;
-        public CustomersController(IRepository<Customer> customerRepository, IRepository<Preference> preferenceRepository,
+        readonly ICustomerService _customerService;
+        public CustomersController(ICustomerService customerService,
             ICustomerMapper customerMapper)
         {
+            this._customerService = customerService;
             this._customerMapper = customerMapper;
-            this._preferenceRepository = preferenceRepository;
-            this._eFRepository = customerRepository;
+          
         }
         ///<summary>
         /// Get all customers
@@ -36,32 +36,11 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet]
         public async Task<ActionResult<CustomerShortResponse>> GetCustomersAsync()
         {
-            var customers = await _eFRepository.GetAllAsync();
-            var customerModelList = customers.Select(x => CustomerToShortDTO(x));
+            var customers = await _customerService.GetAllCustomersAsync();
+            var customerModelList = customers.Select(x => _customerMapper.MapCustomerEntityToShortDTO(x));
             return Ok(customerModelList);
         }
-        private static CustomerShortResponse CustomerToShortDTO(Customer customer) =>
-            new CustomerShortResponse()
-            {
-                Id = customer.Id,
-                Email = customer.Email,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName
-            };
-        private static CustomerResponse CustomerToDTO(Customer customer) =>
-            new CustomerResponse()
-            {
-                Id = customer.Id,
-                Email = customer.Email,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName,
-                Preferences = customer.Preferences.Select(p=> new PreferenceResponse()
-                {
-                    Id = p.PreferenceId,
-                    Name = p.Preference.Name
-
-                }).ToList()
-            };
+   
         ///<summary>
         /// Get a customer with the specified Id
         ///</summary>
@@ -73,8 +52,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerResponse>> GetCustomerAsync(Guid id)
         {
-            var customer = await _eFRepository.GetByIdAsync(id);
-
+            var customer = await _customerService.GetCustomerAsync(id);
             if (customer == null)
             {
                 var error = new HttpResponseException()
@@ -85,8 +63,7 @@ namespace PromocodeFactoryProject.Controllers
                 throw error;
                 // return NotFound();
             }
-
-            CustomerResponse customerModel = CustomerToDTO(customer);
+            CustomerResponse customerModel = _customerMapper.MapCustomerEntityToDTO(customer);
             return Ok(customerModel);
         }
         ///<summary>
@@ -103,26 +80,16 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCustomerAsync(CreateOrEditCustomerRequest request)
         {
-            var preferences = await GetPreferencesAsync(request.PreferenceIds);
-            var customer = _customerMapper.MapFromModel(request, preferences);
-            await _eFRepository.AddAsync(customer);
+            var preferences = await _customerService.GetPreferencesAsync(request.PreferenceIds);
+            var customer = _customerMapper.MapDTOToCustomerEntity(request, preferences);
+            await _customerService.CreateCustomerAsync(customer);
 
             return CreatedAtAction(
               nameof(GetCustomerAsync),
               new { id = customer.Id },
               null);
         }
-        private Task<IEnumerable<Preference>> GetPreferencesAsync(List<Guid> ids)
-        {
-            IEnumerable<Preference> preferences = new List<Preference>();
-            if (ids != null && ids.Count> 0)
-            {
-                Expression < Func<Preference, bool> > expression = x => ids.Any(item => item == x.Id);
-                return  _preferenceRepository.GetByConditionAsync(expression);
-            }
 
-            return Task.FromResult(preferences);
-        }
 
         ///<summary>
         /// Edit customer with the specified Id
@@ -135,8 +102,8 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> EditCustomersAsync(Guid id, CreateOrEditCustomerRequest request)
         {
-            var customer = await _eFRepository.GetByIdAsync(id);
-            var preferences = await GetPreferencesAsync(request.PreferenceIds);
+            var customer = await _customerService.GetCustomerAsync(id);
+            var preferences = await _customerService.GetPreferencesAsync(request.PreferenceIds);
             if (customer == null)
             {
                 //return NotFound();
@@ -152,8 +119,8 @@ namespace PromocodeFactoryProject.Controllers
                 return BadRequest("This customer cannot be modified");
 
             }
-            customer = _customerMapper.MapFromModel(request, preferences, customer);
-            await _eFRepository.UpdateAsync(customer);
+            customer = _customerMapper.MapDTOToCustomerEntity(request, preferences, customer);
+            await _customerService.UpdateCustomer(customer);
             return NoContent();
         }
 
@@ -168,7 +135,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteCustomer(Guid id)
         {
-            var customer = await _eFRepository.GetByIdAsync(id);
+            var customer = await _customerService.GetCustomerAsync(id);
             if (customer == null)
             {
                 //return NotFound();
@@ -179,7 +146,8 @@ namespace PromocodeFactoryProject.Controllers
                 };
                 throw error;
             }
-            await _eFRepository.RemoveAsync(customer);
+
+            await _customerService.DeleteCustomer(customer);
             return NoContent();
         }
     }
