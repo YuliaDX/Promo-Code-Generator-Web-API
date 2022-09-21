@@ -1,9 +1,11 @@
-﻿using Core.Domain;
+﻿using BusinessLogic.Abstractions;
+using Core.Domain;
 using Core.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PromocodeFactoryProject.ErrorHandling;
+using PromocodeFactoryProject.Mappers;
 using PromocodeFactoryProject.Model;
 using System;
 using System.Collections.Generic;
@@ -16,13 +18,13 @@ namespace PromocodeFactoryProject.Controllers
     [Route("api/v1/[controller]")]
     public class PartnersController : ControllerBase
     {
-        readonly IRepository<Partner> _partnerRepository;
-        readonly ICurrentDateTimeProvider _currentDateTimeProvider;
+        private readonly IPartnerService _partnerService;
+        readonly IPartnerMapper _partnerMapper;
 
-        public PartnersController(IRepository<Partner> partnerRepository, ICurrentDateTimeProvider currentDateTimeProvider)
+        public PartnersController(IPartnerService partnerService, IPartnerMapper partnerMapper)
         {
-            this._currentDateTimeProvider = currentDateTimeProvider;
-            this._partnerRepository = partnerRepository;
+            this._partnerMapper = partnerMapper;
+            _partnerService = partnerService;
         }
 
         ///<summary>
@@ -31,36 +33,9 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PartnerResponse>>> GetPartnersAsync()
         {
-            var partners = await _partnerRepository.GetAllAsync();
-            var partnerModelList = partners.Select(x => PartnerToDTO(x));
+            var partners = await _partnerService.GetAllPartnersAsync();
+            var partnerModelList = partners.Select(x => _partnerMapper.MapPartnerEntityToDTO(x));
             return Ok(partnerModelList);
-        }
-
-        private PartnerResponse PartnerToDTO(Partner x)
-        {
-            PartnerResponse model = new PartnerResponse()
-            {
-                Id = x.Id,
-                Name = x.Name,
-                NumberIssuedPromoCodes = x.NumberIssuedPromoCodes,
-                IsActive = x.IsActive,
-                PartnerLimits = x.PartnerLimits.Select(partnerLimit => PromoCodeLimitToDTO(partnerLimit)).ToList()
-
-            };
-            return model;
-        }
-        private PartnerPromoCodeLimitResponse PromoCodeLimitToDTO(PartnerPromoCodeLimit partnerLimit)
-        {
-            PartnerPromoCodeLimitResponse limitResponse = new PartnerPromoCodeLimitResponse()
-            {
-                Id = partnerLimit.Id,
-                PartnerId = partnerLimit.PartnerId,
-                CreateDate = partnerLimit.CreateDate.ToString("dd.MM.yyyy hh:mm:ss"),
-                CancelDate = partnerLimit.CancelDate?.ToString("dd.MM.yyyy hh:mm:ss"),
-                EndDate = partnerLimit.EndDate.ToString("dd.MM.yyyy hh:mm:ss"),
-                Limit = partnerLimit.Limit
-            };
-            return limitResponse;
         }
 
         ///<summary>
@@ -69,7 +44,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet("{id}/limits/{limitId}")]
         public async Task<ActionResult<PartnerPromoCodeLimitResponse>> GetPartnerLimitAsync(Guid id, Guid limitId)
         {
-            var partner = await _partnerRepository.GetByIdAsync(id);
+            var partner = await _partnerService.GetPartnerAsync(id);
             if (partner == null)
             {
                 var error = new HttpResponseException()
@@ -81,7 +56,7 @@ namespace PromocodeFactoryProject.Controllers
                 // return NotFound();
             }
 
-            var partnerLimit = partner.PartnerLimits.First(l => l.Id == limitId);
+            var partnerLimit = _partnerService.GetPartnerPromoCodeLimit(partner, limitId);
             if (partnerLimit == null)
             {
                 var error = new HttpResponseException()
@@ -91,7 +66,7 @@ namespace PromocodeFactoryProject.Controllers
                 };
                 throw error;
             }
-            var limitResponse = PromoCodeLimitToDTO(partnerLimit);
+            var limitResponse =_partnerMapper.MapPromoCodeLimitToDTO(partnerLimit);
             return Ok(limitResponse);
         }
         ///<summary>
@@ -107,7 +82,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPost("{id}/limits")]
         public async Task<IActionResult> SetPartnerPromoCodeLimitAsync(Guid id, PartnerPromoCodeLimitRequest request)
         {
-            var partner = await _partnerRepository.GetByIdAsync(id);
+            var partner = await _partnerService.GetPartnerAsync(id);
             if (partner == null)
             {
                 var error = new HttpResponseException()
@@ -118,34 +93,16 @@ namespace PromocodeFactoryProject.Controllers
                 throw error;
                 // return NotFound();
             }
+            if (request.Limit <= 0)
+                return BadRequest("Limit should be larger than 0");
 
             if (!partner.IsActive)
             {
                 return BadRequest("The partner is disabled!!");
             }
 
-            var activeLimits = partner.PartnerLimits.Where(x => !x.CancelDate.HasValue);
-            if (activeLimits.Count() > 0)
-                partner.NumberIssuedPromoCodes = 0;
-
-            foreach (PartnerPromoCodeLimit activeLimit in activeLimits)
-                activeLimit.CancelDate = _currentDateTimeProvider.CurrentDateTime;
-
-            if (request.Limit <= 0)
-                return BadRequest("Limit should be larger than 0");
-
-
-            var newLimit = new PartnerPromoCodeLimit()
-            {
-                Limit = request.Limit,
-                Partner = partner,
-                PartnerId = partner.Id,
-                CreateDate = DateTime.Now,
-                EndDate = request.EndDate
-            };
-
-            partner.PartnerLimits.Add(newLimit);
-            await _partnerRepository.UpdateAsync(partner);
+            var newLimit = await _partnerService.SetPartnerPromoCodeLimitAsync(request.Limit, request.EndDate, partner);
+           
             return CreatedAtAction(nameof(GetPartnerLimitAsync), new { id = partner.Id, limitId = newLimit.Id }, null);
         }
         ///<summary>
@@ -154,7 +111,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPost("{id}/canceledLimits")]
         public async Task<IActionResult> CancelPartnerPromoCodeLimitAsync(Guid id)
         {
-            var partner = await _partnerRepository.GetByIdAsync(id);
+            var partner = await _partnerService.GetPartnerAsync(id);
             if (partner == null)
             {
                 var error = new HttpResponseException()
@@ -169,15 +126,7 @@ namespace PromocodeFactoryProject.Controllers
             if (!partner.IsActive)
                 return BadRequest("The partner is disabled!!");
 
-            var activeLimit = partner.PartnerLimits.FirstOrDefault(x =>
-               !x.CancelDate.HasValue);
-
-            if (activeLimit != null)
-            {
-                activeLimit.CancelDate = _currentDateTimeProvider.CurrentDateTime;
-            }
-
-            await _partnerRepository.UpdateAsync(partner);
+            await _partnerService.CancelPartnerPromoCodeLimitAsync(partner);
 
             return NoContent();
 

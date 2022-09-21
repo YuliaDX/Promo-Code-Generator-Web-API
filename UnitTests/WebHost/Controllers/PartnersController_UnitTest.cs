@@ -1,5 +1,6 @@
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using BusinessLogic;
 using Core.Domain;
 using Core.Repositories;
 using FluentAssertions;

@@ -10,8 +10,9 @@ namespace PromocodeFactoryProject.Mappers
 {
 	public interface IEmployeeMapper
     {
-        Task<Employee> MapFromModelAsync(CreateOrEditEmployeeRequest model,
+        Task<Employee> MapEmployeeFromModelAsync(CreateOrEditEmployeeRequest model,
            Employee employee = null);
+        EmployeeResponse MapEmployeeToDTO(Employee employee);
 
     }
 }

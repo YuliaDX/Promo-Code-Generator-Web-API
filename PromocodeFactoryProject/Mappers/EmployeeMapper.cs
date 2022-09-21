@@ -17,7 +17,7 @@ namespace PromocodeFactoryProject.Mappers
         {
             _rolesRepository = rolesRepository;
         }
-        public async Task<Employee> MapFromModelAsync(CreateOrEditEmployeeRequest model, Employee employee = null)
+        public async Task<Employee> MapEmployeeFromModelAsync(CreateOrEditEmployeeRequest model, Employee employee = null)
         {
             if (employee == null)
             {
@@ -37,5 +37,19 @@ namespace PromocodeFactoryProject.Mappers
             return employee;
             
         }
+        public EmployeeResponse MapEmployeeToDTO(Employee employee) =>
+           new EmployeeResponse()
+           {
+               Id = employee.Id,
+               Email = employee.Email,
+               Role = new RoleItemResponse()
+               {
+                   Name = employee.Role.Name,
+                   Description = employee.Role.Description
+               },
+               FullName = employee.FullName,
+               AppliedPromocodesCount = employee.AppliedPromocodesCount
+           };
+
     }
 }

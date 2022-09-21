@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BusinessLogic.Abstractions;
 
 namespace PromocodeFactoryProject.Controllers
 {
@@ -20,14 +21,14 @@ namespace PromocodeFactoryProject.Controllers
     public class EmployeesController
        : ControllerBase
     {
-        private readonly IRepository<Employee> _employeeRepository;
-        
+        private readonly IEmployeeService _employeeService;
+
         private readonly IEmployeeMapper _employeeMapper;
-        public EmployeesController(IRepository<Employee> employeeRepository, 
+        public EmployeesController(IEmployeeService employeeService,
              IEmployeeMapper employeeMapper)
         {
-            _employeeRepository = employeeRepository;
-            _employeeMapper = employeeMapper;
+            _employeeService = employeeService;
+             _employeeMapper = employeeMapper;
         }
 
         ///<summary>
@@ -36,27 +37,14 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet]
         public async Task<List<EmployeeResponse>> GetEmployeesAsync()
         {
-            var employees = await _employeeRepository.GetAllAsync();
+            var employees = await _employeeService.GetAllEmployeesAsync();
 
-            var employeesModelList = employees.Select(x => EmployeeToDTO(x)).ToList();
+            var employeesModelList = employees.Select(x => _employeeMapper.MapEmployeeToDTO(x)).ToList();
 
             return employeesModelList;
         }
       
-        private static EmployeeResponse EmployeeToDTO(Employee employee) =>
-             new EmployeeResponse()
-             {
-                 Id = employee.Id,
-                 Email = employee.Email,
-                 Role = new RoleItemResponse()
-                 {
-                     Name = employee.Role.Name,
-                     Description = employee.Role.Description
-                 },
-                 FullName = employee.FullName,
-                 AppliedPromocodesCount = employee.AppliedPromocodesCount
-             };
-
+  
         ///<summary>
         /// Get an employee by Id
         ///</summary>
@@ -68,7 +56,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<EmployeeResponse>> GetEmployeeByIdAsync(Guid id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var employee = await _employeeService.GetEmployeeAsync(id);
 
             if (employee == null)
             {
@@ -81,8 +69,7 @@ namespace PromocodeFactoryProject.Controllers
                 //return NotFound();
             }
 
-            EmployeeResponse employeeModel = EmployeeToDTO(employee);
-
+            EmployeeResponse employeeModel = _employeeMapper.MapEmployeeToDTO(employee);
             return employeeModel;
         }
         ///<summary>
@@ -91,8 +78,8 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateEmployeeAsync(CreateOrEditEmployeeRequest model)
         {
-            var employee = await _employeeMapper.MapFromModelAsync(model);
-            await _employeeRepository.AddAsync(employee);
+            var employee = await _employeeMapper.MapEmployeeFromModelAsync(model);
+            await _employeeService.CreateEmployeeAsync(employee);
 
             return CreatedAtAction(
                nameof(GetEmployeeByIdAsync),
@@ -110,7 +97,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPut("{id:guid}")]
         public async Task<ActionResult<EmployeeResponse>> UpdateEmployee(Guid id, CreateOrEditEmployeeRequest model)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var employee = await _employeeService.GetEmployeeAsync(id);
             if (employee == null)
             {
                 // return NotFound();
@@ -127,9 +114,9 @@ namespace PromocodeFactoryProject.Controllers
                 return BadRequest("This employee cannot be modified");
             }
            
-            employee = await _employeeMapper.MapFromModelAsync(model, employee);
+            employee = await _employeeMapper.MapEmployeeFromModelAsync(model, employee);
 
-            await _employeeRepository.UpdateAsync(employee);
+            await _employeeService.UpdateEmployee(employee);
             return NoContent();
         }
         ///<summary>
@@ -143,7 +130,7 @@ namespace PromocodeFactoryProject.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<ActionResult<EmployeeResponse>> DeleteEmployee(Guid id)
         {
-            var employee = await _employeeRepository.GetByIdAsync(id);
+            var employee = await _employeeService.GetEmployeeAsync(id);
             if (employee == null)
             {
                 // return NotFound();
@@ -154,7 +141,7 @@ namespace PromocodeFactoryProject.Controllers
                 };
                 throw error;
             }
-            await _employeeRepository.RemoveAsync(employee);
+            await _employeeService.DeleteEmployee(employee);
             return NoContent();
         }
     }

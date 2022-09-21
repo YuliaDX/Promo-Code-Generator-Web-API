@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PromocodeFactoryProject
+namespace BusinessLogic
 {
     public interface ICurrentDateTimeProvider
     {

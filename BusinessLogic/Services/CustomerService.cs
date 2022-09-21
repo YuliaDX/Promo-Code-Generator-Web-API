@@ -7,9 +7,9 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessLogic.Abstractions
+namespace BusinessLogic.Services
 {
-    class CustomerService : ICustomerService
+    public class CustomerService : ICustomerService
     {
         readonly IRepository<Preference> _preferenceRepository;
         readonly IRepository<Customer> _eFRepository;

@@ -17,6 +17,9 @@ using PromocodeFactoryProject.Mappers;
 using Core.Domain;
 using Microsoft.EntityFrameworkCore;
 using PromocodeFactoryProject.ErrorHandling;
+using BusinessLogic;
+using BusinessLogic.Abstractions;
+using BusinessLogic.Services;
 
 namespace PromocodeFactoryProject
 {
@@ -47,8 +50,15 @@ namespace PromocodeFactoryProject
 
             services.AddScoped<IEmployeeMapper, EmployeeMapper>();
             services.AddScoped<ICustomerMapper, CustomerMapper>();
+            services.AddScoped<IPartnerMapper, PartnerMapper>();
             services.AddScoped<IPromoCodeMapper, PromoCodeMapper>();
+
             services.AddScoped<ICurrentDateTimeProvider, CurrentDateTimeProvider>();
+
+            services.AddScoped<IPartnerService, PartnerService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+
             services.AddDbContext<DataContext>(x=>
             {
                 x.UseSqlite("FileName = PromocodeDataBase.sqlite; ");
