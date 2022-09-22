@@ -1,6 +1,7 @@
 ﻿using Core;
 using Core.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using PromocodeFactoryProject.Mappers;
 using PromocodeFactoryProject.Model;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,11 @@ namespace PromocodeFactoryProject.Controllers
     public class RolesController
     {
         private readonly IRepository<Role> _rolesRepository;
+        readonly IRoleMapper _roleMapper;
 
-        public RolesController(IRepository<Role> rolesRepository)
+        public RolesController(IRepository<Role> rolesRepository, IRoleMapper roleMapper)
         {
+            this._roleMapper = roleMapper;
             _rolesRepository = rolesRepository;
         }
 
@@ -28,12 +31,7 @@ namespace PromocodeFactoryProject.Controllers
         {
             var roles = await _rolesRepository.GetAllAsync();
 
-            var rolesModelList = roles.Select(x =>
-                new RoleItemResponse()
-                {
-                    Name = x.Name,
-                    Description = x.Description
-                }).ToList();
+            var rolesModelList = roles.Select(x => _roleMapper.MapRoleToDTO(x)).ToList();
 
             return rolesModelList;
         }

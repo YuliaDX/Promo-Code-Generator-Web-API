@@ -10,13 +10,14 @@ namespace PromocodeFactoryProject.Mappers
 {
     public interface IPromoCodeMapper
     {
-        public PromoCode MapFromModel(PromoCodeRequest promoCodeRequest, IEnumerable<Preference> preferences, 
-            IEnumerable<Employee> employees, PromoCode promoCode = null);
+        PromoCode MapPromoCodeFromModel(PromoCodeRequest promoCodeRequest, Preference preference,
+            Employee employee, PromoCode promoCode = null);
+        PromoCodeResponse MapPromocodeToDTO(PromoCode promoCode);
     }
     public class PromoCodeMapper : IPromoCodeMapper
     {
-        public PromoCode MapFromModel(PromoCodeRequest promoCodeRequest, IEnumerable<Preference> preferences,
-            IEnumerable<Employee> employees, PromoCode promoCode = null)
+        public PromoCode MapPromoCodeFromModel(PromoCodeRequest promoCodeRequest, Preference preference,
+            Employee employee, PromoCode promoCode = null)
         {
             if(promoCode == null)
             {
@@ -27,11 +28,23 @@ namespace PromocodeFactoryProject.Mappers
             promoCode.Code = promoCodeRequest.PromoCode;
             promoCode.PartnerName = promoCodeRequest.PartnerName;
             promoCode.ServiceInfo = promoCodeRequest.ServiceInfo;
-            promoCode.Preference = preferences.FirstOrDefault(p => p.Name == promoCodeRequest.Preference);
-            promoCode.PartnerManager = employees.FirstOrDefault(e=> e.Id == promoCodeRequest.PartnerManagerId);
+            promoCode.Preference = preference;
+            promoCode.PartnerManager = employee;
             promoCode.BeginDate = DateTime.Now;
             promoCode.EndDate = promoCode.BeginDate.AddMonths(2);
             return promoCode;
         }
+
+        public PromoCodeResponse MapPromocodeToDTO(PromoCode promoCode) =>
+             new PromoCodeResponse()
+             {
+                 Id = promoCode.Id,
+                 Code = promoCode.Code,
+                 ServiceInfo = promoCode.ServiceInfo,
+                 BeginDate = promoCode.BeginDate.ToString("yyyy-MM-dd"),
+                 EndDate = promoCode.EndDate.ToString("yyyy-MM-dd"),
+                 PartnerName = promoCode.PartnerName
+
+             };
     }
 }

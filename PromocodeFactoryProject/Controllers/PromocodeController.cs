@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using BusinessLogic.Abstractions;
+using Core;
 using Core.Domain;
 using Core.Repositories;
 using DataAccess.Repositories;
@@ -18,20 +19,14 @@ namespace PromocodeFactoryProject.Controllers
     public class PromocodesController
          : ControllerBase
     {
-        readonly IRepository<PromoCode> _promocodeRepository;
-        readonly IRepository<Preference> _preferenceRepository;
-        private readonly IRepository<Employee> _employeeRepository;
+        private readonly IPromoCodeService _promoCodeService;
         readonly IPromoCodeMapper _promoCodeMapper;
-        readonly CustomerRepository _customerRepository;
-        public PromocodesController(IRepository<PromoCode> promocodeRepository, 
-            IRepository<Preference> preferenceRepository, IRepository<Customer> customerRepository,
-          IRepository<Employee> employeeRepository,  IPromoCodeMapper promoCodeMapper)
+        
+        public PromocodesController(IPromoCodeService promoCodeService, IPromoCodeMapper promoCodeMapper)
         {
-            this._customerRepository = (CustomerRepository)customerRepository;
+            this._promoCodeService = promoCodeService;
             this._promoCodeMapper = promoCodeMapper;
-            this._preferenceRepository = preferenceRepository;
-            this._employeeRepository = employeeRepository;
-            this._promocodeRepository = promocodeRepository;
+           
         }
         /// <summary>
         /// Get all promocodes
@@ -40,21 +35,11 @@ namespace PromocodeFactoryProject.Controllers
         [HttpGet]
         public async Task<ActionResult<List<PromoCodeResponse>>> GetPromocodesAsync()
         {
-            var promocodes = await _promocodeRepository.GetAllAsync();
-            var promocodesModel = promocodes.Select(x => PromocodeToDTO(x)) as IList<PromoCodeResponse>;
+            var promoCodes = await _promoCodeService.GetAllPromoCodesAsync();
+            var promocodesModel = promoCodes.Select(x => _promoCodeMapper.MapPromocodeToDTO(x)) as IList<PromoCodeResponse>;
             return Ok(promocodesModel);
         }
-        private static PromoCodeResponse PromocodeToDTO(PromoCode promoCode) =>
-      new PromoCodeResponse()
-      {
-          Id = promoCode.Id,
-          Code = promoCode.Code,
-          ServiceInfo = promoCode.ServiceInfo,
-          BeginDate = promoCode.BeginDate.ToString("yyyy-MM-dd"),
-          EndDate = promoCode.EndDate.ToString("yyyy-MM-dd"),
-          PartnerName = promoCode.PartnerName
-          
-      };
+   
         /// <summary>
         /// Create a promocode and send it to customers with the specified preference
         /// </summary>
@@ -70,19 +55,13 @@ namespace PromocodeFactoryProject.Controllers
         [HttpPost]
         public async Task<IActionResult> GivePromoCodesToCustomersWithPreferenceAsync(PromoCodeRequest request)
         {
-            var preferences = await _preferenceRepository.GetAllAsync();
-            var employees = await _employeeRepository.GetAllAsync();
-            var promoCode = _promoCodeMapper.MapFromModel(request, preferences, employees);
-            await _promocodeRepository.AddAsync(promoCode);
+            var preference = await _promoCodeService.GetPreferenceAsync(request.Preference);
+            var employee = await _promoCodeService.GetPartnerManagerAsync(request.PartnerManagerId);
+            var promoCode = _promoCodeMapper.MapPromoCodeFromModel(request, preference, employee);
 
-            Expression<Func<Customer, bool>> expression = customer =>
-                customer.Preferences.Any(p => p.PreferenceId == promoCode.Preference.Id);
+            await _promoCodeService.CreatePromoCodeAsync(promoCode);
 
-            IEnumerable<Customer> customers = await _customerRepository.GetByConditionAsync(expression);
-            foreach (Customer customer in customers)
-                customer.PromoCodes.Add(promoCode);
-
-            await _customerRepository.SaveAsync();
+            await _promoCodeService.GivePromoCodesToCustomersAsync(promoCode);
             return NoContent();
         }
     }

@@ -52,13 +52,17 @@ namespace PromocodeFactoryProject
             services.AddScoped<ICustomerMapper, CustomerMapper>();
             services.AddScoped<IPartnerMapper, PartnerMapper>();
             services.AddScoped<IPromoCodeMapper, PromoCodeMapper>();
+            services.AddScoped<IPreferenceMapper, PreferenceMapper>();
+            services.AddScoped<IRoleMapper, RoleMapper>();
+            
 
             services.AddScoped<ICurrentDateTimeProvider, CurrentDateTimeProvider>();
 
             services.AddScoped<IPartnerService, PartnerService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ICustomerService, CustomerService>();
-
+            services.AddScoped<IPromoCodeService, PromoCodeService>();
+            
             services.AddDbContext<DataContext>(x=>
             {
                 x.UseSqlite("FileName = PromocodeDataBase.sqlite; ");

@@ -1,6 +1,7 @@
 ﻿using Core.Domain;
 using Core.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using PromocodeFactoryProject.Mappers;
 using PromocodeFactoryProject.Model;
 using System;
 using System.Collections.Generic;
@@ -14,9 +15,11 @@ namespace PromocodeFactoryProject.Controllers
     public class PreferenceController:ControllerBase
     {
         readonly IRepository<Preference> _preferenceRepository;
-        public PreferenceController(IRepository<Preference> preferenceRepository)
+        readonly IPreferenceMapper _preferenceMapper;
+        public PreferenceController(IRepository<Preference> preferenceRepository, IPreferenceMapper preferenceMapper)
         {
             this._preferenceRepository = preferenceRepository;
+            _preferenceMapper = preferenceMapper;
         }
         /// <summary>
         /// get preferences
@@ -27,17 +30,11 @@ namespace PromocodeFactoryProject.Controllers
         {
             var preferences = await _preferenceRepository.GetAllAsync();
 
-            var preferenceModelList = preferences.Select(x => PreferenceToDTO(x)).ToList();
+            var preferenceModelList = preferences.Select(x => _preferenceMapper.PreferenceToDTO(x)).ToList();
 
             return preferenceModelList;
         }
-        private static PreferenceResponse PreferenceToDTO(Preference preference) =>
-          new PreferenceResponse()
-          {
-              Id = preference.Id,
-              Name = preference.Name
-          };
-
+    
 
     }
 }
