@@ -108,6 +108,11 @@ namespace PromocodeFactoryProject.Controllers
         ///<summary>
         /// Reset the promocode limit for the specified partner
         ///</summary>
+        ///     ///<example>
+        ///{
+        ///"id": "894b6e9b-eb5f-406c-aefa-8ccb35d39319"
+        ///}
+        ///</example>
         [HttpPost("{id}/canceledLimits")]
         public async Task<IActionResult> CancelPartnerPromoCodeLimitAsync(Guid id)
         {
