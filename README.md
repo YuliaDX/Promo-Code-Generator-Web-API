@@ -14,4 +14,4 @@ The UI layer is represented by the **PromocodeFactoryProject** project. It conta
 
 The project operates with an SQLite database.
 
-There are also sample unit tests implemented for the Partners controller. The unit tests are located in the "UnitTests/WebHost/Controllers" folder. The unit tests are implemented with the help of the xUnit library.
+There are also sample unit tests implemented for the Partners controller and Partner service. The unit tests are located in the "UnitTests/WebHost/Controllers" and "UnitTests/BusinessLogic/Services" folders. The unit tests are implemented with the help of the xUnit library.
